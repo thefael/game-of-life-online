@@ -458,38 +458,42 @@ Player C:
 
 ### 11.2 Main Game Screen
 
-**Layout**: Divided into 3 sections
+**Layout**: Divided into 3 sections (Current State + Preview + Sidebar)
 
 ```
-┌─────────────────────────────────────┬──────────────┐
-│                                     │   SIDEBAR    │
-│                                     │─────────────│
-│                                     │ Timer: 25s  │
-│                                     │             │
-│                                     │ Players:    │
-│          GAME GRID                  │ 🟦 Player A │
-│          (white background)         │    Pop: 12  │
-│                                     │    Score:99 │
-│                                     │             │
-│   . . . . . . . . . . . . . .       │ 🟥 Player B │
-│   . . . . . . . . . . . . . .       │    Pop: 8   │
-│   . . 🟦🟦 . . . . . . . . . .       │    Score:87 │
-│   . . 🟦 . . . 🟥🟥 . . . . .       │             │
-│   . . 🟦🟦 . . 🟥 . . . . . .       │ [Confirm]   │
-│   . . . . . . . . . . . . . .       │ [Cancel]    │
-│   . . . . . . . . . . . . . .       │             │
-│                                     │             │
-│   (50×50 grid, each cell is 16px)   │             │
-│                                     │             │
-└─────────────────────────────────────┴──────────────┘
+┌─────────────────────────┬──────────────────────────┬──────────────┐
+│   CURRENT STATE         │   NEXT STATE PREVIEW     │   SIDEBAR    │
+│   (Grid at t)           │   (Grid at t+1)          │──────────────│
+│                         │                          │ Timer: 25s   │
+│  . . . . . . . . .      │  . . . . . . . . .       │              │
+│  . . . . . . . . .      │  . . . . . . . . .       │ Players:     │
+│  . . 🟦🟦 . . . . .      │  . . 🟦🟦 . . . . .      │ 🟦 Player A  │
+│  . . 🟦 . . 🟥🟥 .      │  . . 🟦 . . 🟥🟥 .      │    Pop: 12   │
+│  . . 🟦🟦 . 🟥 . .      │  . . 🟦🟦 . 🟥 . .      │    Score:99  │
+│  . . . . . . . . .      │  . . . . . . . . .      │              │
+│  . . . . . . . . .      │  . . . . . . . . .      │ 🟥 Player B  │
+│                         │                          │    Pop: 8    │
+│                         │                          │    Score:87  │
+│                         │                          │              │
+│                         │                          │ [Confirm]    │
+│                         │                          │ [Cancel]     │
+│                         │                          │ [Pass]       │
+└─────────────────────────┴──────────────────────────┴──────────────┘
 ```
 
-**Left panel (Grid)**:
+**Left panel (Current State Grid)**:
+- Shows current game state at time `t`
 - White background
-- Cells: 1 pixel = 1 cell (or adjustable zoom)
-- Player cells: solid color (no transparency)
-- Empty cells: white (no border)
-- Territory outline: faint gray/dashed line around each player's territory (optional overlay)
+- Cells: colored if owned, white if empty
+- Territory outline: faint gray/dashed line (optional)
+- Player can click/hover to interact
+
+**Middle panel (Next State Preview)**:
+- Shows projected state at time `t+1` without any player action
+- Updated in real-time as player hovers over cells
+- When player hovers a cell in Current State → both grids highlight the same cell
+- When player hovers → Middle grid shows: "what if I add a cell here?" (cell blinks in preview)
+- Static when no hovering (shows default next state)
 
 **Right sidebar**:
 - Timer countdown (seconds)
@@ -498,46 +502,56 @@ Player C:
 
 ### 11.3 Interaction Flow
 
+**Always visible preview**:
+- Middle panel always shows the **next state** (at time t+1) without any player action
+- When player is NOT hovering/selecting: shows default next state (Game of Life tick on current state)
+- Updates automatically every frame (no manual "compute" button)
+
 **Player interacts with grid:**
 
-1. **Hover/click on empty cell** → Cell enters **preview state**
-   - If click is within 1 cell of their territory → valid placement (preview appears)
+1. **Hover over empty cell** in Current State (left grid):
+   - Cell enters **preview state** in left grid (blinks with reduced opacity)
+   - Middle grid (Next State) updates in real-time to show: "what if I add here?"
+   - Both grids highlight the same cell position
+   - If click is within 1 cell of territory → valid (preview shows outcome)
    - If click is outside territory → shows error "Too far from territory"
-   - Cell blinks with reduced opacity in player's primary color
-   - Side-by-side preview shows: current state | next state (after Game of Life tick)
 
-2. **Preview display**:
+2. **Real-time preview display**:
    ```
-   Current state:          Next state (if you add here):
+   Current state (t):      Next state (t+1) if you add:
    
    . . . . . .            . . . . . .
    . 🟦 . . .             . 🟦 . . .
-   . 🟦 . . .       →     . 🟦🟦' . .  (blinking preview)
+   . 🟦 . . .       →     . 🟦🟦 . .  (showing impact)
    . 🟦 . . .             . 🟦 . . .
    . . . . . .            . . . . . .
-   
-   (side-by-side tabs or split view)
+            ↑ hovering              ↑ updates in real-time
    ```
 
-3. **Player decides** → can:
-   - Click "Confirm" button → cell transitions to **non-committed action** state
-     - Cell now shows in secondary color (lighter/darker shade of primary)
-     - No longer blinking
-     - Checkmark icon appears
-   - Click "Cancel" → returns to normal grid, preview closes
-   - Click elsewhere on grid → tests new location (new preview spawns)
+3. **Player decides**:
+   - Hover over multiple cells to see different outcomes in real-time
+   - Once settled on a location:
+     - Click "Confirm" button → cell transitions to **non-committed action** state
+       - Cell now shows in secondary color in Current State grid
+       - No longer blinking
+       - Checkmark icon appears
+     - Click "Cancel" → reverts to default next-state preview (no action)
+   - Click elsewhere → tests new location (preview updates to new location)
 
 4. **After confirming** (non-committed):
-   - Cell is locked in secondary color with checkmark
+   - Cell is locked in secondary color with checkmark in left grid
+   - Middle grid continues to show preview of confirmed action
    - Player can click "Cancel" to undo and try different location again
-   - Upon re-confirming new location, old secondary cell reverts to white, new cell becomes secondary
+   - Upon re-confirming new location: old secondary cell reverts to white, new cell becomes secondary
    - Only ONE non-committed action per player at a time
 
-5. **After timer expires**:
-   - All non-committed actions resolve and transform to **primary color** (final state)
+5. **Timer expires**:
+   - All non-committed actions resolve and transform to **primary color** in left grid
+   - Middle grid is recalculated based on new state
    - Animations stop
    - Scores update
-   - New timer begins
+   - New 30-second timer begins
+   - New preview cycle starts
 
 ### 11.4 Visual Indicators
 
@@ -568,35 +582,47 @@ Player C:
 **State transition example** (Player A: Primary Blue / Secondary Light Blue):
 
 ```
-Step 1 - Initial:
-. . . .
-. 🟦 . .
-. 🟦 . .
-. . . .
+Step 1 - Initial (t=0, no hovering):
+LEFT (current):         RIGHT (next without action):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .                 . 🟦 . .
+. . . .                 . . . .
 
-Step 2 - Player hovers/clicks (1,1):
-. . . .
-. 🟦 . .
-. 🟦 . .  ← (1,1) in PREVIEW: 🟦 (blinking, 60% opacity)
-. . . .
+Step 2 - Player hovers (1,1):
+LEFT (current):         RIGHT (next with (1,1) added):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .  ← blinking     . 🟦🟦 . .  ← blinks/updates
+. . . .                 . . . .
 
-Step 3 - Player confirms:
-. . . .
-. 🟦 . .
-. 🟦 . .  ← (1,1) NON-COMMITTED: 🟦' (light blue, 100% opacity, ✓)
-. . . .
+Step 3 - Player confirms (1,1):
+LEFT (current):         RIGHT (next with (1,1)):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .  ← 🟦' (locked)  . 🟦🟦 . .
+. . . .                 . . . .
 
-Step 4 - Player changes mind, tries (2,2):
-. . . .
-. 🟦 . .
-. 🟦 . .  ← (1,1) reverts to white
-. . 🟦' . ← (2,2) NON-COMMITTED: 🟦' (light blue, 100% opacity, ✓)
+Step 4 - Player changes mind, hovers (2,2):
+LEFT (current):         RIGHT (next with (2,2)):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .                 . 🟦 . .  ← preview updates
+. . 🟦 . ← blinking      . . 🟦 . .  ← shows (2,2) outcome
 
-Step 5 - Timer expires, action resolves:
-. . . .
-. 🟦 . .
-. 🟦 . .
-. . 🟦 . ← (2,2) becomes PRIMARY: 🟦 (full blue, 100% opacity)
+Step 5 - Player confirms (2,2):
+LEFT (current):         RIGHT (next with (2,2)):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .  ← reverted     . 🟦 . .
+. . 🟦' . ← 🟦' (locked) . . 🟦 . .
+
+Step 6 - Timer expires (t+1), action resolves:
+LEFT (current):         RIGHT (next at t+2):
+. . . .                 . . . .
+. 🟦 . .         →       . 🟦 . .
+. 🟦 . .                 . 🟦 . .
+. . 🟦 . ← 🟦 (primary)  . . 🟦 . .
 ```
 
 **Territory bounds** (optional overlay):
