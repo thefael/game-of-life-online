@@ -37,11 +37,16 @@
 ### Rule 3: Territorial Conquest (3-Turn Rule)
 - **Contested cell**: A cell inside Player A's territory but owned by Player B
 - **Conquest condition**: If a contested cell remains in Player A's territory for **3+ consecutive turns** → ownership transfers to Player A
-- **Loss condition**: If a cell owned by Player A leaves their territory for **3+ consecutive turns** → cell dies (is removed)
+- **Wild cell condition**: If a cell owned by Player A leaves their territory for **3+ consecutive turns** → becomes **wild/unowned**
+- **Wild cell behavior**: 
+  - Wild cells follow normal Game of Life rules (birth/death)
+  - Any player can conquer wild cells if they enter their territory for 3+ turns
+  - Creates neutral "frontier" cells that can be claimed by anyone
 - **Implication**: 
   - Glider guns can only conquer cells within the shooter's own territory
   - Invasion requires expanding your territory first, then using cells/patterns to conquer slowly
-  - You must defend your population from spreading too far
+  - You must defend your population from spreading too far, or lose cells to wildness
+  - Wild cells create strategic neutral zones and recovery opportunities
 
 ### Rule 4: Player Actions (Per Turn)
 - **Action phase**: Before each tick, one player (in turn order) can:
