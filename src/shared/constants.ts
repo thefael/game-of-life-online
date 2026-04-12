@@ -14,3 +14,6 @@ export const MAX_PLAYERS = 4;
 
 // Scoring: population bonus awarded per N cells
 export const POPULATION_BONUS_THRESHOLD = 5;
+
+// Game loop timer duration in seconds
+export const TIMER_DURATION = 5;
