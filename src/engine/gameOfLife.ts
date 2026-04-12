@@ -35,16 +35,23 @@ export class GameOfLife {
   }
 
   private determineBirthOwner(neighborsByPlayer: Map<PlayerId, number>): PlayerId {
-    let maxNeighbors = 0;
-    let ownerId = 0;
+    if (neighborsByPlayer.size === 0) {
+      throw new Error('Birth requires at least one neighbor');
+    }
 
-    for (const [playerId, count] of neighborsByPlayer) {
+    let maxNeighbors = 0;
+    let winningPlayerId = 0;
+
+    for (const [playerId, count] of neighborsByPlayer.entries()) {
+      // Winner is: highest neighbor count, or lowest player ID if tied
       if (count > maxNeighbors) {
         maxNeighbors = count;
-        ownerId = playerId;
+        winningPlayerId = playerId;
+      } else if (count === maxNeighbors && playerId < winningPlayerId) {
+        winningPlayerId = playerId;
       }
     }
 
-    return ownerId;
+    return winningPlayerId;
   }
 }
