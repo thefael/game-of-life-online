@@ -425,7 +425,163 @@ Player C:
 
 ---
 
-## 11. References
+## 11. User Interface & UX
+
+### 11.1 Pre-Game: Room & Color Selection
+
+**Screen**: Room lobby before game starts
+
+```
+┌─────────────────────────────────────────┐
+│  Game of Life Online                    │
+│─────────────────────────────────────────│
+│  Room: "Arena 1"                        │
+│  Players: [2/8]                         │
+│─────────────────────────────────────────│
+│  Choose your color:                     │
+│                                         │
+│  [🟦] Blue     [🟥] Red    [🟩] Green   │
+│  [🟨] Yellow   [🟪] Purple [🟧] Orange  │
+│  [⬛] Black    [⬜] White               │
+│                                         │
+│  (Click to select)                      │
+│─────────────────────────────────────────│
+│          [Start Game]                   │
+└─────────────────────────────────────────┘
+```
+
+**Behavior**:
+- Player selects one color
+- Color preview updates in real-time
+- Once all players ready → "Start Game" button activates
+- Game begins with color assignment locked
+
+### 11.2 Main Game Screen
+
+**Layout**: Divided into 3 sections
+
+```
+┌─────────────────────────────────────┬──────────────┐
+│                                     │   SIDEBAR    │
+│                                     │─────────────│
+│                                     │ Timer: 25s  │
+│                                     │             │
+│                                     │ Players:    │
+│          GAME GRID                  │ 🟦 Player A │
+│          (white background)         │    Pop: 12  │
+│                                     │    Score:99 │
+│                                     │             │
+│   . . . . . . . . . . . . . .       │ 🟥 Player B │
+│   . . . . . . . . . . . . . .       │    Pop: 8   │
+│   . . 🟦🟦 . . . . . . . . . .       │    Score:87 │
+│   . . 🟦 . . . 🟥🟥 . . . . .       │             │
+│   . . 🟦🟦 . . 🟥 . . . . . .       │ [Confirm]   │
+│   . . . . . . . . . . . . . .       │ [Cancel]    │
+│   . . . . . . . . . . . . . .       │             │
+│                                     │             │
+│   (50×50 grid, each cell is 16px)   │             │
+│                                     │             │
+└─────────────────────────────────────┴──────────────┘
+```
+
+**Left panel (Grid)**:
+- White background
+- Cells: 1 pixel = 1 cell (or adjustable zoom)
+- Player cells: solid color (no transparency)
+- Empty cells: white (no border)
+- Territory outline: faint gray/dashed line around each player's territory (optional overlay)
+
+**Right sidebar**:
+- Timer countdown (seconds)
+- List of players: name, color, population count, current score
+- Action buttons: Confirm / Cancel / Pass
+
+### 11.3 Interaction Flow
+
+**Player interacts with grid:**
+
+1. **Click on empty cell** → Opens "Action Menu" or directly enters preview mode
+   - If click is within 1 cell of their territory → valid placement
+   - If click is outside territory → shows error "Too far from territory"
+
+2. **Preview appears** (overlay or new view):
+   ```
+   Current state:          Next state (if you add here):
+   
+   . . . . . .            . . . . . .
+   . 🟦 . . .             . 🟦 . . .
+   . 🟦 . . .       →     . 🟦✓ . .
+   . 🟦 . . .             . 🟦 . . .
+   . . . . . .            . . . . . .
+   
+   (show side-by-side or swappable tabs)
+   ```
+
+3. **Player sees preview** → can:
+   - Click "Confirm" to lock this action
+   - Click "Cancel" to go back and try different location
+   - Click elsewhere on grid to test new location (preview updates)
+
+4. **After confirming** → cell turns into "claimed" state:
+   - Shows a checkmark or outline to indicate "locked"
+   - Cell appears as player's color with visual indication (e.g., checkmark ✓)
+   - Player can still "Cancel" to undo and try again
+
+5. **Timer expires** → all confirmed actions resolve
+
+### 11.4 Visual Indicators
+
+**Cell states on grid**:
+
+| State | Visual | Example |
+|-------|--------|---------|
+| Empty | White pixel | ⬜ |
+| Player A owned | Solid color | 🟦 |
+| Player B owned | Solid color | 🟥 |
+| Wild cell | Dimmed/striped pattern | 🟦░ (faded blue) |
+| Claimed by A (pending) | Color + checkmark | 🟦✓ |
+| In preview (your click) | Color + outline | 🟦⬚ (with border) |
+| Conflict (taken by other) | Color + X or red overlay | 🟥❌ |
+
+**Territory bounds** (optional overlay):
+- Faint gray dashed line showing each player's territory boundary
+- Can be toggled on/off
+- Helps players understand their claimed region
+
+**Timer visual**:
+- Large countdown number (25s, 24s, 23s...)
+- Color changes as time runs low: green → yellow → red (< 5s)
+- Pulsing animation when < 5 seconds
+
+### 11.5 Feedback & Status Messages
+
+**Top or bottom of screen**:
+
+```
+Status bar:
+"✓ Action confirmed at (10, 10) | Waiting for timer... 15s remaining"
+```
+
+**Error messages** (if applicable):
+- "❌ Too far from territory! Add adjacent to your cells."
+- "❌ Cell already claimed by Player B."
+- "⏰ Time's up! Action saved. Resolving..."
+
+**Success**:
+- "✓ Action confirmed!"
+- "✓ Round resolved! +5 points (population)."
+
+### 11.6 Responsive Design Notes
+
+- Grid should scale to fit screen (zoom in/out)
+- Mobile: single column (grid above, sidebar below)
+- Desktop: side-by-side layout (grid left, sidebar right)
+- Sidebar always visible (sticky, not scrollable)
+- Preview can open in modal or split-screen depending on screen size
+
+---
+
+## 12. References
 
 - [Game of Life Rules Document](./../../game-of-life-rules.md) — Comprehensive rules, patterns, and implementation notes
 - [Brainstorm Notes](./../../brainstorm-notes.md) — Design evolution and decisions
