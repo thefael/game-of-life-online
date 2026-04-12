@@ -70,3 +70,25 @@ export type PendingAction =
       committed: boolean;
     }
   | { playerId: PlayerId; type: 'pass'; committed: boolean };
+
+// Type guards for CellOwnership
+export function isCellOwnedType(cell: CellOwnership): cell is { type: 'owned'; playerId: PlayerId; turnsSinceOwnershipChange?: number } {
+  return cell.type === 'owned';
+}
+
+export function isCellWildType(cell: CellOwnership): cell is { type: 'wild'; playerId: PlayerId; turnsSinceOwnershipChange?: number } {
+  return cell.type === 'wild';
+}
+
+export function isCellEmptyType(cell: CellOwnership): cell is { type: 'empty' } {
+  return cell.type === 'empty';
+}
+
+// Type guards for PendingAction
+export function isActionWithPosition(action: PendingAction): action is { playerId: PlayerId; type: 'add' | 'remove'; cellPosition: { x: number; y: number }; committed: boolean } {
+  return action.type === 'add' || action.type === 'remove';
+}
+
+export function isActionPass(action: PendingAction): action is { playerId: PlayerId; type: 'pass'; committed: boolean } {
+  return action.type === 'pass';
+}

@@ -7,6 +7,11 @@ import {
   GameState,
   PendingAction,
   isValidPlayerId,
+  isCellOwnedType,
+  isCellWildType,
+  isCellEmptyType,
+  isActionWithPosition,
+  isActionPass,
 } from '../../src/engine/types';
 
 describe('Types', () => {
@@ -156,5 +161,31 @@ describe('Types', () => {
     };
     expect(pass.type).toBe('pass');
     expect('cellPosition' in pass).toBe(false);
+  });
+
+  test('isValidPlayerId validates correctly', () => {
+    expect(isValidPlayerId(0)).toBe(true);
+    expect(isValidPlayerId(7)).toBe(true);
+    expect(isValidPlayerId(8)).toBe(false);
+    expect(isValidPlayerId(-1)).toBe(false);
+  });
+
+  test('type guards identify cell ownership states', () => {
+    const owned: CellOwnership = { type: 'owned', playerId: 0 };
+    const wild: CellOwnership = { type: 'wild', playerId: 1 };
+    const empty: CellOwnership = { type: 'empty' };
+
+    expect(isCellOwnedType(owned)).toBe(true);
+    expect(isCellWildType(wild)).toBe(true);
+    expect(isCellEmptyType(empty)).toBe(true);
+  });
+
+  test('type guards identify action types', () => {
+    const add: PendingAction = { playerId: 0, type: 'add', cellPosition: { x: 5, y: 5 }, committed: true };
+    const pass: PendingAction = { playerId: 0, type: 'pass', committed: false };
+
+    expect(isActionWithPosition(add)).toBe(true);
+    expect(isActionPass(pass)).toBe(true);
+    expect(isActionPass(add)).toBe(false);
   });
 });
