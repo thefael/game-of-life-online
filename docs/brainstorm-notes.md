@@ -34,19 +34,20 @@
   - **Ownership**: assigned to the player with the most adjacent living cells
   - Tiebreaker: player A wins (or random)
 
-### Rule 3: Territorial Conquest (3-Turn Rule)
-- **Contested cell**: A cell inside Player A's territory but owned by Player B
-- **Conquest condition**: If a contested cell remains in Player A's territory for **3+ consecutive turns** → ownership transfers to Player A
-- **Wild cell condition**: If a cell owned by Player A leaves their territory for **3+ consecutive turns** → becomes **wild/unowned**
-- **Wild cell behavior**: 
-  - Wild cells follow normal Game of Life rules (birth/death)
-  - Any player can conquer wild cells if they enter their territory for 3+ turns
-  - Creates neutral "frontier" cells that can be claimed by anyone
+### Rule 3: Ownership & Wild Cells
+- **Ownership by birth**: When a cell is **born (via Game of Life)** inside Player A's territory → becomes owned by Player A
+  - Ownership is tracked by position/lineage, not individual cell instances
+  - The cell can die and be reborn — A retains ownership if reborn within territory
+- **Wild cell condition**: If a cell owned by Player A **leaves their territory and stays outside for 3+ consecutive turns** (while alive) → becomes **wild/unowned**
+  - Wild cells are no longer owned by anyone
+  - Follow normal Game of Life rules
+  - Any player can claim wild cells if they enter that player's territory for 3+ turns
+- **Conquest condition**: If a wild cell (or enemy cell) stays inside Player A's territory for **3+ consecutive turns** → A gains ownership
 - **Implication**: 
-  - Glider guns can only conquer cells within the shooter's own territory
-  - Invasion requires expanding your territory first, then using cells/patterns to conquer slowly
-  - You must defend your population from spreading too far, or lose cells to wildness
-  - Wild cells create strategic neutral zones and recovery opportunities
+  - Territory expansion is about controlling regions, not individual cells
+  - Cells that drift too far from home become wild resources (neutral frontier)
+  - Conquest is slow and requires sustained territorial control
+  - You can recover your own wild cells by re-expanding
 
 ### Rule 4: Player Actions (Per Turn)
 - **Action phase**: Before each tick, one player (in turn order) can:
