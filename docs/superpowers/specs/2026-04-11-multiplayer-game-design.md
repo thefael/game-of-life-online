@@ -425,7 +425,42 @@ Player C:
 
 ---
 
-## 11. User Interface & UX
+## 11. User Interface & UX Design
+
+### 11.0 Overall Layout
+
+**Web-based game with 4 main zones:**
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                                                          TOP RIGHT       │
+│                                                    ┌──────────────────┐  │
+│                                                    │    RANKING       │  │
+│                                                    │                  │  │
+│                      MAIN CANVAS                   │  🟦 Player A: 99 │  │
+│                    (zoomable, pannable)            │  🟥 Player B: 87 │  │
+│                                                    │  🟩 Player C: 75 │  │
+│                         50×50 grid                 │  🟨 Player D: 64 │  │
+│                      (or larger)                   │                  │  │
+│                                                    │ Timer: 15s       │  │
+│                                                    │ [Confirm Action] │  │
+│                                                    │ [Cancel]         │  │
+│                                                    │ [Pass]           │  │
+│                                                    └──────────────────┘  │
+│                                                                          │
+│                                                                          │
+├────────────────────────────────────────────────────────────────────────┤
+│ BOTTOM RIGHT                                                            │
+│ ┌──────────────────┐                                                   │
+│ │   MINI-MAP       │                                                   │
+│ │                  │                                                   │
+│ │  🟦🟦 🟥        │  (Viewport indicator showing which part of grid)  │
+│ │  🟦  🟥🟥      │                                                   │
+│ │      🟩🟩      │                                                   │
+│ │  [+] Zoom [-]   │                                                   │
+│ └──────────────────┘                                                   │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ### 11.1 Pre-Game: Room & Color Selection
 
@@ -456,128 +491,263 @@ Player C:
 - Once all players ready → "Start Game" button activates
 - Game begins with color assignment locked
 
-### 11.2 Main Game Screen
+### 11.2 Main Game Screen Layout
 
-**Layout**: Divided into 3 sections (Current State + Preview + Sidebar)
+**Single Canvas + Side Panels**
 
 ```
-┌─────────────────────────┬──────────────────────────┬──────────────┐
-│   CURRENT STATE         │   NEXT STATE PREVIEW     │   SIDEBAR    │
-│   (Grid at t)           │   (Grid at t+1)          │──────────────│
-│                         │                          │ Timer: 25s   │
-│  . . . . . . . . .      │  . . . . . . . . .       │              │
-│  . . . . . . . . .      │  . . . . . . . . .       │ Players:     │
-│  . . 🟦🟦 . . . . .      │  . . 🟦🟦 . . . . .      │ 🟦 Player A  │
-│  . . 🟦 . . 🟥🟥 .      │  . . 🟦 . . 🟥🟥 .      │    Pop: 12   │
-│  . . 🟦🟦 . 🟥 . .      │  . . 🟦🟦 . 🟥 . .      │    Score:99  │
-│  . . . . . . . . .      │  . . . . . . . . .      │              │
-│  . . . . . . . . .      │  . . . . . . . . .      │ 🟥 Player B  │
-│                         │                          │    Pop: 8    │
-│                         │                          │    Score:87  │
-│                         │                          │              │
-│                         │                          │ [Confirm]    │
-│                         │                          │ [Cancel]     │
-│                         │                          │ [Pass]       │
-└─────────────────────────┴──────────────────────────┴──────────────┘
+┌──────────────────────────────────────────────┬─────────────────────┐
+│                                              │                     │
+│           MAIN GAME CANVAS                   │   TOP RIGHT PANEL   │
+│                                              │  ┌─────────────────┐ │
+│     Current State (t)                        │  │   RANKING       │ │
+│     ─────────────────                        │  │                 │ │
+│     50×50 grid (zoomable)                    │  │ 🟦 Player A     │ │
+│     White background                         │  │    Pop: 12      │ │
+│     Colored cells by player                  │  │    Score: 99    │ │
+│                                              │  │                 │ │
+│   ┌─────────────────────────────────────┐   │  │ 🟥 Player B     │ │
+│   │. . 🟦🟦 . . . . . . . . . . .       │   │  │    Pop: 8       │ │
+│   │. . 🟦 . . . 🟥🟥 . . . . . .       │   │  │    Score: 87    │ │
+│   │. . 🟦🟦 . . 🟥 . . . . . . .       │   │  │                 │ │
+│   │. . . . . . . . . . . . . . . .     │   │  │ 🟩 Player C     │ │
+│   │. . . . . . . . . . . . . . . .     │   │  │    Pop: 15      │ │
+│   │                                   │   │  │    Score: 76    │ │
+│   │(scroll/pan to navigate)           │   │  │                 │ │
+│   └─────────────────────────────────────┘   │  │ Timer: 15s      │ │
+│                                              │  │                 │ │
+│   Next State Preview (t+1)                   │  │ [CONFIRM]       │ │
+│   ─────────────────────                      │  │ [Cancel]        │ │
+│   (shown below or tabbed)                    │  │ [Pass]          │ │
+│   Hover position cell blinks                 │  │                 │ │
+│                                              │  └─────────────────┘ │
+│                                              │                     │
+├──────────────────────────────────────────────┴─────────────────────┤
+│                                     BOTTOM RIGHT: MINI-MAP         │
+│                                     ┌──────────────────┐           │
+│                                     │  🟦🟦 🟥        │           │
+│                                     │  🟦  🟥🟥      │           │
+│                                     │      🟩🟩      │           │
+│                                     │  ┌──┐           │           │
+│                                     │  │██│(viewport) │           │
+│                                     │  └──┘           │           │
+│                                     │                 │           │
+│                                     │  [+] Zoom [-]   │           │
+│                                     └──────────────────┘           │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Left panel (Current State Grid)**:
-- Shows current game state at time `t`
+### 11.2a Main Canvas (Left/Center)
+
+**Current State Grid**:
+- **Size**: Large, responsive (takes ~70% of viewport width)
+- **Background**: White (#FFFFFF)
+- **Cells**: 
+  - Player cells: solid color (primary color)
+  - Wild cells: dimmed/faded version of original color
+  - Empty cells: white
+  - Each cell: 8×8 pixels (adjustable via zoom)
+- **Grid lines**: Optional light gray lines (1px) separating cells
+- **Territory outline**: Faint dashed gray line around each player's territory (togglable)
+- **Interaction**: Click to select cell, hover to preview
+
+**Navigation**:
+- **Pan**: Click + drag to move around grid
+- **Zoom**: Mouse wheel to zoom in/out (0.5x to 3x)
+- **Keyboard**: Arrow keys to pan, +/- keys to zoom
+
+**Next State Preview (Below Canvas)**:
+- Tab or toggle to switch between Current and Preview
+- Shows what grid will look like after Game of Life tick
+- When hovering a cell in Current State, Preview updates in real-time
+- Shows the clicked cell with a blinking preview
+
+### 11.2b Right Panel
+
+**Ranking Panel (Top Right)**:
+- List of players sorted by score (descending)
+- For each player:
+  - Color swatch (matches player color)
+  - Player name
+  - Population count
+  - Current score
+  - Rank badge (#1, #2, etc.)
+- **Update frequency**: Real-time (updates after each action or tick)
+
+**Timer Panel**:
+- Large countdown number (15s, 14s, ...)
+- Color indicator:
+  - Green (≥ 10s)
+  - Yellow (5-9s)
+  - Red (< 5s)
+  - Pulsing animation (< 5s)
+
+**Action Buttons**:
+- **[CONFIRM]** button: Large, primary color, highlighted
+  - Locked after confirmed (grayed out until action resets)
+  - Shows "✓ Confirmed" state
+- **[Cancel]** button: Secondary color
+  - Resets pending action, allows new selection
+- **[Pass]** button: Tertiary color
+  - Submits pass action without cell placement
+
+### 11.2c Bottom Right: Mini-Map
+
+**Visual representation**:
+- Scaled-down version of entire 50×50 grid (approx 150×150px)
+- All cells visible at once
+- Colors match main canvas
 - White background
-- Cells: colored if owned, white if empty
-- Territory outline: faint gray/dashed line (optional)
-- Player can click/hover to interact
 
-**Middle panel (Next State Preview)**:
-- Shows projected state at time `t+1` without any player action
-- Updated in real-time as player hovers over cells
-- When player hovers a cell in Current State → both grids highlight the same cell
-- When player hovers → Middle grid shows: "what if I add a cell here?" (cell blinks in preview)
-- Static when no hovering (shows default next state)
+**Viewport Indicator**:
+- Outlined rectangle showing which part of the grid is currently visible in main canvas
+- Updates in real-time as user pans/zooms
+- User can click on mini-map to jump to that location
 
-**Right sidebar**:
-- Timer countdown (seconds)
-- List of players: name, color, population count, current score
-- Action buttons: Confirm / Cancel / Pass
+**Zoom Controls**:
+- **[+]** button: Zoom in (max 3x)
+- **[-]** button: Zoom out (min 0.5x)
+- Display current zoom level (e.g., "1.5x")
 
-### 11.3 Interaction Flow
+### 11.2d Responsive Design
+
+**Desktop (1920×1080+)**:
+- Main canvas: ~70% viewport width
+- Right panel: fixed 20% width (sticky)
+- Bottom right mini-map: fixed position, always visible
+- Optimal spacing and padding
+
+**Tablet (1024×768)**:
+- Main canvas: ~65% width
+- Right panel: ~30% width
+- Mini-map: scaled down slightly
+- Single column layout if needed
+
+**Mobile (<768px)**:
+- Full-width canvas (no mini-map or ranking visible)
+- Ranking accessible via tab/drawer
+- Mini-map in drawer
+- Stacked layout
+- Touch-friendly controls (larger buttons)
+
+### 11.3 Interaction Flow (Click-Based Actions)
 
 **Always visible preview**:
-- Middle panel always shows the **next state** (at time t+1) without any player action
-- When player is NOT hovering/selecting: shows default next state (Game of Life tick on current state)
-- Updates automatically every frame (no manual "compute" button)
+- **Next State Preview** (below Current State or in toggle) always shows t+1 state
+- Default: Game of Life tick on current grid (without player action)
+- Real-time updates when player hovers/selects cells
 
-**Player interacts with grid:**
+**Player interacts with main canvas:**
 
-1. **Hover over empty cell** in Current State (left grid):
-   - Cell enters **preview state** in left grid (blinks with reduced opacity)
-   - Middle grid (Next State) updates in real-time to show: "what if I add here?"
-   - Both grids highlight the same cell position
-   - If click is within 1 cell of territory → valid (preview shows outcome)
-   - If click is outside territory → shows error "Too far from territory"
+1. **Hover over cell** in Current State:
+   - If within 1 cell of territory → valid location
+     - Cell shows **preview state**: blinking, reduced opacity (60%), player's primary color
+   - If outside territory → shows red outline error: "Too far from territory"
+   - **Next State Preview** updates in real-time showing: "what if you add here?"
 
-2. **Real-time preview display**:
+2. **Click on cell** (to select for action):
+   - Cell transitions to **non-committed state**: secondary color, solid (no blink), checkmark visible
+   - Right panel: **[CONFIRM]** button becomes active/highlighted
+   - **Next State Preview** still shows the hypothetical outcome
+   - Player can:
+     - Click **[CONFIRM]** → locks action, button shows "✓ Confirmed"
+     - Click **[Cancel]** → resets, cell reverts to white, can select different cell
+     - Click different cell → replaces selection (old cell reverts, new cell becomes secondary)
+
+3. **Real-time preview in action**:
    ```
-   Current state (t):      Next state (t+1) if you add:
+   Current State (t):              Next State (t+1) if confirmed:
    
-   . . . . . .            . . . . . .
-   . 🟦 . . .             . 🟦 . . .
-   . 🟦 . . .       →     . 🟦🟦 . .  (showing impact)
-   . 🟦 . . .             . 🟦 . . .
-   . . . . . .            . . . . . .
-            ↑ hovering              ↑ updates in real-time
+   . . . . . .                    . . . . . .
+   . 🟦 . . .                    . 🟦 . . .
+   . 🟦 . . .          →          . 🟦 . . .
+   . 🟦 . . .                    . 🟦 . . .
+   . 🟦' . . . (selected/         . 🟦 . . . (shows impact
+     secondary)                     with added cell)
    ```
 
-3. **Player decides**:
-   - Hover over multiple cells to see different outcomes in real-time
-   - Once settled on a location:
-     - Click "Confirm" button → cell transitions to **non-committed action** state
-       - Cell now shows in secondary color in Current State grid
-       - No longer blinking
-       - Checkmark icon appears
-     - Click "Cancel" → reverts to default next-state preview (no action)
-   - Click elsewhere → tests new location (preview updates to new location)
+4. **After clicking [CONFIRM]**:
+   - Right panel shows: "✓ Action locked at (5, 5)"
+   - Cell remains in secondary color
+   - Button states change:
+     - [CONFIRM] → grayed out, disabled
+     - [Cancel] → still active (allows undo)
+   - Wait for timer to expire or confirm manually
 
-4. **After confirming** (non-committed):
-   - Cell is locked in secondary color with checkmark in left grid
-   - Middle grid continues to show preview of confirmed action
-   - Player can click "Cancel" to undo and try different location again
-   - Upon re-confirming new location: old secondary cell reverts to white, new cell becomes secondary
-   - Only ONE non-committed action per player at a time
+5. **Timer reaches 0**:
+   - All confirmed actions resolve simultaneously
+   - Cells transform from secondary → primary color
+   - Grid updates with Game of Life tick
+   - Scores update in right panel
+   - Mini-map refreshes
+   - New 30-second timer starts
+   - All players reset to new selection phase
 
-5. **Timer expires**:
-   - All non-committed actions resolve and transform to **primary color** in left grid
-   - Middle grid is recalculated based on new state
-   - Animations stop
-   - Scores update
-   - New 30-second timer begins
-   - New preview cycle starts
+**Mini-map interaction**:
+- Click on mini-map to jump camera to that location
+- Viewport indicator shows current view
+- Useful for navigating large grids
 
-### 11.4 Visual Indicators
+**Zoom/Pan**:
+- Scroll wheel: zoom in/out
+- Click + drag: pan around grid
+- Arrow keys: pan (optional)
+- Zoom buttons in mini-map panel: [+] and [-]
+
+### 11.4 Visual Cell States
 
 **Cell states on grid**:
 
-| State | Visual | Description | Example |
-|-------|--------|-------------|---------|
-| Empty | White | Solid white background | ⬜ |
-| Player A owned | Primary color | Solid, full opacity | 🟦 (solid blue) |
-| Player B owned | Primary color | Solid, full opacity | 🟥 (solid red) |
-| Wild cell | Faded/striped | Dimmed version of original color | 🟦░ (faded blue) |
-| **Preview state** | **Blinking primary + transparency** | **Cell blinks at ~1 Hz, reduced opacity (~60%), player's primary color** | **🟦 (blinking, semi-transparent)** |
-| **Non-committed action** | **Secondary color** | **Locked to secondary shade of player color (lighter/darker), solid, no blink** | **🟦' (lighter blue)** |
-| **Confirmed action** | **Primary color** | **Transforms to full primary color, shows checkmark or lock icon** | **🟦✓ (solid blue + check)** |
-| Conflict (taken by other) | Crossed pattern | X overlay or dimmed + X | 🟦❌ |
+| State | Visual | Animation | Meaning |
+|-------|--------|-----------|---------|
+| Empty | White #FFFFFF | None | Unowned, available |
+| Owned | Primary color (e.g., #0066FF blue) | None | Player owns this cell |
+| Wild | Faded color (e.g., #99CCFF light blue) | Striped pattern or reduced opacity | Was owned, became unowned, awaiting claim |
+| **Hover/Preview** | **Primary color + blinking** | **Opacity 0.6, blink 1Hz** | Showing what would happen if added here |
+| **Selected/Uncommitted** | **Secondary color (e.g., #CCDDFF)** | **Checkmark overlay** | Player clicked, action pending confirmation |
+| **Confirmed** | **Primary color** | **Subtle highlight glow** | Action locked, waiting for timer |
 
-**Color system per player**:
-- **Primary color**: The player's main color (e.g., Blue for Player A)
-- **Secondary color**: Lighter/darker shade of primary
-  - Example: Player A is `#0066FF` (blue) → secondary is `#99CCFF` (light blue)
-  - Example: Player B is `#FF0000` (red) → secondary is `#FF9999` (light red)
+**Color system**:
 
-**Animation states**:
-- **Preview (blinking)**: CSS `opacity: 0.6; animation: blink 1s infinite;`
-- **Non-committed (static)**: CSS `opacity: 1; color: secondary_shade;`
-- **Confirmed (static + icon)**: CSS `opacity: 1; color: primary_color;` + checkmark overlay
+Example: Player A
+- **Primary**: `#0066FF` (bright blue)
+- **Secondary**: `#CCDDFF` (light blue, ~40% lighter)
+
+Example: Player B
+- **Primary**: `#FF0000` (red)
+- **Secondary**: `#FFCCCC` (light red)
+
+**CSS Animations**:
+
+```css
+@keyframes blink {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+.cell-preview {
+  background-color: var(--player-primary);
+  animation: blink 1s infinite;
+}
+
+.cell-selected {
+  background-color: var(--player-secondary);
+  position: relative;
+}
+
+.cell-selected::after {
+  content: '✓';
+  position: absolute;
+  color: var(--player-primary);
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.cell-confirmed {
+  background-color: var(--player-primary);
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.5);
+}
+```
 
 **State transition example** (Player A: Primary Blue / Secondary Light Blue):
 
@@ -624,6 +794,84 @@ LEFT (current):         RIGHT (next at t+2):
 . 🟦 . .                 . 🟦 . .
 . . 🟦 . ← 🟦 (primary)  . . 🟦 . .
 ```
+
+### 11.5 State Example Walkthrough
+
+**Scenario**: Player's turn, 3 seconds left on timer
+
+**Step 1 - Initial state**:
+```
+Main Canvas                          Right Panel
+. . . . . .                          🟦 Player A
+. 🟦 . . .        (neutral)          Pop: 5
+. 🟦 . . .                           Score: 12
+. 🟦 . . .                           Timer: 3s
+. . . . . .                          [CONFIRM] (disabled)
+                                     [Cancel] (disabled)
+                                     [Pass] (enabled)
+```
+
+**Step 2 - Hover over valid cell (4, 1)**:
+```
+Main Canvas                          Right Panel
+. . . . . .                          🟦 Player A
+. 🟦 . . .        (preview           Pop: 5
+. 🟦 . . .         blinks here)       Score: 12
+. 🟦 . 🟦 ← (blinking, 60%)          Timer: 3s
+. . . . . .                          [CONFIRM] (disabled)
+                                     [Cancel] (disabled)
+                                     [Pass] (enabled)
+
+Next Preview below:
+. . . . . .        (shows result if
+. 🟦 . . .         cell at (4,1)
+. 🟦 . . .         is added)
+. 🟦 . 🟦
+. . . . . .
+```
+
+**Step 3 - Click on cell (4, 1)**:
+```
+Main Canvas                          Right Panel
+. . . . . .                          🟦 Player A
+. 🟦 . . .        (selected in       Pop: 5
+. 🟦 . . .         secondary)         Score: 12
+. 🟦 . 🟦' ← (light blue + ✓)         Timer: 2s
+. . . . . .                          [CONFIRM] (active, highlighted)
+                                     [Cancel] (active)
+                                     [Pass] (enabled)
+
+Next Preview:
+(still shows result)
+```
+
+**Step 4 - Click [CONFIRM]**:
+```
+Main Canvas                          Right Panel
+. . . . . .                          🟦 Player A
+. 🟦 . . .        (confirmed,        Pop: 5
+. 🟦 . . .         subtle glow)       Score: 12
+. 🟦 . 🟦 ← (full blue + glow)        Timer: 1s
+. . . . . .                          [CONFIRM] (disabled, "✓ Locked")
+                                     [Cancel] (active)
+                                     [Pass] (disabled)
+
+Status: "✓ Action confirmed at (4, 1)"
+```
+
+**Step 5 - Timer expires (0s)**:
+```
+Main Canvas                          Right Panel
+. . . . . .        (game ticks,      🟦 Player A
+. 🟦 . . .         evolves)           Pop: 6 (updated!)
+. 🟦 . . .                           Score: 13 (updated!)
+. 🟦 . 🟦                            Timer: 30s (reset)
+. . . . . .                          [CONFIRM] (re-enabled)
+(cells may have changed)             [Cancel] (re-enabled)
+                                     [Pass] (enabled)
+```
+
+### 11.6 User Interface Elements
 
 **Territory bounds** (optional overlay):
 - Faint gray dashed line showing each player's territory boundary
