@@ -37,7 +37,8 @@ export class GameStateManager {
 
   addPlayer(name: string, color: PlayerColor): Player {
     const id = this.players.size as PlayerId;
-    if (id >= MAX_PLAYERS) throw new Error('Max players reached');
+    // If maxPlayers is 0, allow unlimited players. Otherwise check the limit.
+    if (this.maxPlayers > 0 && id >= this.maxPlayers) throw new Error('Max players reached');
 
     const player: Player = {
       id,
@@ -50,6 +51,10 @@ export class GameStateManager {
 
     this.players.set(id, player);
     return player;
+  }
+
+  removePlayer(playerId: PlayerId): void {
+    this.players.delete(playerId);
   }
 
   getPlayers(): Map<PlayerId, Player> {
