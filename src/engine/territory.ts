@@ -1,6 +1,7 @@
 // src/engine/territory.ts
 import { Grid } from './grid';
 import { PlayerId } from './types';
+import { MAX_PLAYERS } from '../shared/constants';
 
 export interface TerritoryBounds {
   minX: number;
@@ -15,15 +16,15 @@ export class TerritoryCompute {
 
     if (cells.length === 0) return null;
 
-    const xs = cells.map((c) => c.x);
-    const ys = cells.map((c) => c.y);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const cell of cells) {
+      minX = Math.min(minX, cell.x);
+      maxX = Math.max(maxX, cell.x);
+      minY = Math.min(minY, cell.y);
+      maxY = Math.max(maxY, cell.y);
+    }
 
-    return {
-      minX: Math.min(...xs),
-      maxX: Math.max(...xs),
-      minY: Math.min(...ys),
-      maxY: Math.max(...ys),
-    };
+    return { minX, maxX, minY, maxY };
   }
 
   isCellInTerritory(x: number, y: number, bounds: TerritoryBounds): boolean {
@@ -33,7 +34,7 @@ export class TerritoryCompute {
   getAllTerritory(grid: Grid): Map<PlayerId, TerritoryBounds> {
     const result = new Map<PlayerId, TerritoryBounds>();
 
-    for (let playerId = 0; playerId < 8; playerId++) {
+    for (let playerId = 0; playerId < MAX_PLAYERS; playerId++) {
       const bounds = this.computeTerritory(grid, playerId);
       if (bounds) {
         result.set(playerId, bounds);
