@@ -97,54 +97,114 @@ The game operates in **discrete turns**, where each turn follows this sequence:
 5. **Scoring update**
 6. **Next player** (loop)
 
-### 3.2 Player Decision Phase (NEW: Preview System)
+### 3.2 Global Timer & Simultaneous Decisions
+
+**Turn timing**:
+- **Global timer**: Each turn has a fixed duration (e.g., 30 seconds)
+- **All players decide simultaneously**: Each player plans their action in parallel
+- **Automatic progression**: When timer expires, all actions resolve and game ticks
+- **Timeout behavior**: If a player doesn't confirm an action, they **pass** (no action taken)
+
+### 3.3 Player Decision Phase (Preview System)
 
 **Current player's perspective**:
 - Player sees the **current game state** (all cells, territories, scores)
 - Player can make **hypothetical edits** (test placing/removing cells) without committing
 - For each hypothetical edit, the game shows a **live preview** of the next game state (next Game of Life frame)
 - Player iterates: adjust cell placement, watch preview, adjust again
-- Once satisfied, player **commits** one action (or passes)
+- Player can **cancel/undo** their choice and select a different action before final confirmation
+- Once satisfied, player **confirms** one action (or passes)
 
 **How preview works**:
 1. Current game state: `Grid[t]`
 2. Player proposes: "Add cell at (x, y)"
 3. Game computes: `Grid[t+1]` = `GameOfLife(Grid[t] + new cell)`
 4. Preview displays `Grid[t+1]` to the player
-5. Player can see consequences before committing
-6. Once committed, the turn proceeds
+5. Player can see consequences before confirming
+6. Player clicks "Confirm" to lock in the action
 
 **Multiple preview options**:
 - Player can preview multiple different placements (e.g., "what if I add at (10,10)?" vs. "what if I add at (10,11)?")
-- Each preview is independent; no changes are made until commit
-- Player settles on one action and commits
+- Each preview is independent; no changes are made until confirmed
+- Player settles on one action and clicks "Confirm"
+- Player can click "Cancel" to undo, and try a different placement (must "Confirm" again)
 
-### 3.3 Action Commit Phase
+### 3.4 Real-time Conflict Resolution (Simultaneous Multi-player)
 
-**Player chooses ONE of**:
-- **Add 1 cell** at position (x, y): Must be adjacent to owned cells; must be within/adjacent to territory; must be empty
-- **Pass**: Do nothing (skip action)
-- (Remove cell: deferred for now; can be added later)
+**Conflict scenario**: Two players both try to add a cell at the same location.
 
-**After commit**:
-- The chosen cell addition/pass is locked in
-- Game does NOT re-simulate — the actual state remains as-is
-- Proceed to Simulation phase
+**Resolution mechanism** (Opção C: Real-time Feedback + First Confirmed):
 
-### 3.4 Simulation Phase
+1. **Real-time visual feedback**: As timer counts down, players see which cells are being **"claimed"** by other players in real-time
+   - A cell claimed by Player A shows **Player A's color** and a temporary indicator (e.g., outline, glow)
+   - Player B sees this cell is no longer available
+   - Cell remains claimed until one of two things happens:
+     - Player A confirms their action → cell is locked for Player A
+     - Timer expires before A confirms → cell is released (action timed out)
 
-**Game of Life tick**:
-- All cells update simultaneously using B3/S23 rules
-- Births, deaths, and ownership assignments happen at once
-- The preview that the player saw is now realized (or diverges, depending on other players' actions if multiplayer)
+2. **Claim priority**: When a player **confirms** their action → claim becomes final
+   - If Player A confirms first at (x, y) → A wins the cell
+   - If Player B also selected (x, y) but hasn't confirmed → B sees it's taken, can cancel and choose elsewhere
+   - If B confirms before timer, but A confirmed first → B's action is **rejected** and marked as conflict
+   - B's action doesn't resolve; B is forced to re-attempt next turn (or timer expires to auto-pass)
 
-**Multi-player note**: If N > 1 players:
-- All players see previews based on the current state
-- All previews are independent (not accounting for other players' actions)
-- Once Player 1 commits their action and Game ticks, Player 2's preview becomes outdated
-- Player 2 gets a fresh preview based on the new state (after Player 1's action and tick)
+3. **Player feedback on conflicts**:
+   - **During decision phase**: "Cell (x, y) is claimed by Player A" message
+   - **After confirmation attempt**: If conflict, message: "Action failed: cell already claimed. Choose another location or pass."
+   - Player can quickly re-select and re-confirm before timer expires
 
-### 3.5 Territorial Update & Scoring
+4. **Timer expiration with pending action**:
+   - If timer expires and player hasn't confirmed → action is **auto-passed**
+   - If player confirmed but was in conflict → action fails, state reverts to "pass"
+   - No action is lost; players simply pass that turn
+
+**Example flow**:
+```
+T=0s (timer starts): Grid shows current state
+T=5s: Player A clicks on cell (10, 10) → preview shows outcome → A is "planning"
+T=8s: A clicks "Confirm" → cell (10, 10) is now CLAIMED by A (visual feedback)
+T=10s: Player B clicks on cell (10, 10) → sees "Claimed by A" → cancels
+T=12s: B clicks on cell (10, 11) → preview shows outcome → B clicks "Confirm"
+T=30s: Timer expires
+       → A's action: Add cell at (10, 10) ✓
+       → B's action: Add cell at (10, 11) ✓
+       → Game ticks
+```
+
+**Another example (conflict)**:
+```
+T=5s: Player A clicks (10, 10) → no preview yet
+T=7s: A and B both decide (10, 10) is good
+T=8s: A confirms → (10, 10) is CLAIMED by A
+T=9s: B sees claim, cancels, tries (10, 11)
+T=10s: B confirms (10, 11)
+T=30s: Both actions succeed
+```
+
+**Worst case (simultaneous confirmation)**:
+```
+T=5s: A clicks (10, 10)
+T=8s: B clicks (10, 10)
+T=10s: A confirms (10, 10) → A gets the cell
+T=10s: B also tries to confirm (10, 10) → CONFLICT
+       Message: "Cell already claimed by Player A"
+       B's action is rejected; B passes this turn
+```
+
+### 3.5 Simulation Phase (After Timer Expires)
+
+**All confirmed actions resolve simultaneously**:
+1. All valid, confirmed actions are applied to the grid
+2. Game of Life tick computes next frame
+   - All cells update simultaneously using B3/S23 rules
+   - Births, deaths, and ownership assignments happen at once
+3. Multi-player actions are all reflected in this single tick
+
+**Non-simultaneous (vs. Turn-by-turn)**:
+- Unlike turn-based where Player 1 acts → tick → Player 2 acts → tick
+- Here: All players act (within timer) → single tick → next timer
+
+### 3.6 Territorial Update & Scoring
 
 After simulation:
 1. Compute territories for each player
@@ -152,9 +212,9 @@ After simulation:
 3. Apply conquest rules (3+ turns inside enemy territory → owned)
 4. Update scores based on population, patterns, territory
 
-### 3.6 Next Player
+### 3.7 Next Round
 
-Move to the next player in turn order. Repeat from Section 3.2.
+Timer resets. All players make decisions simultaneously for the next turn. Repeat from Section 3.2.
 
 ### 3.2 Restrictions
 - **Add cell**: Must be adjacent (horizontally, vertically, or diagonally) to an existing owned cell
@@ -229,11 +289,15 @@ Move to the next player in turn order. Repeat from Section 3.2.
 | Grid size | 50×50+ | Scales with player count |
 | Players | 2-8 | Can adjust |
 | Initial B/S rules | B3/S23 | Conway's original |
-| Actions per turn | 1 | Add or remove 1 cell |
+| Actions per round | 1 | Add or remove 1 cell per player |
+| Timer duration | 30 seconds | Time to decide action |
+| Timer behavior | Auto-advance | When time expires: all confirmed actions resolve + tick |
+| Timeout action | Pass | Player who doesn't confirm = pass (no action) |
+| Conflict resolution | First confirmed wins | Real-time visual feedback; earliest confirm gets cell |
 | Wild rule timeout | 3 turns | Outside territory → wild |
 | Conquest timeout | 3 turns | Inside territory → owned |
-| Population bonus | +1 per 5 cells | Each turn |
-| Scoring period | Per turn or end-of-game | TBD |
+| Population bonus | +1 per 5 cells | Each round |
+| Simultaneous ticks | Yes | All players' actions resolve in 1 tick (not sequential) |
 
 ---
 
@@ -294,23 +358,39 @@ Game computes next frame:
 
 ---
 
-## 8. Example Turn Flow
+## 8. Example Turn Flow (Simultaneous Multi-player)
 
-**Turn 1 - Player A's action**:
-- A has 5 cells forming a Blinker pattern
-- A adds 1 cell adjacent to their territory
-- → Score: A gains +1 (population: 6 cells = 1 bonus)
-- Game of Life tick applies
-- → Blinker oscillates; new cell may birth due to neighbors
-- Territorial check: A's territory now encompasses 7 cells
-- Next: Player B's action
+**Round 1 - Timer: 30 seconds**:
 
-**Turn 2 - Player B's action**:
-- B places a cell that will die next turn (strategic sacrifice)
-- Game of Life tick
-- Territorial check: B loses 2 cells to wildness (were outside territory for 3 turns)
-- B's population drops to 4 cells
-- Next: Player C's action (if exists)
+Player A:
+- T=5s: Clicks on cell (10, 10), sees preview
+- T=10s: Confirms (10, 10) → cell claimed by A
+- T=30s: Action locked in
+
+Player B:
+- T=3s: Clicks on cell (12, 12), sees preview
+- T=8s: Also wants (10, 10), sees it's claimed by A
+- T=12s: Clicks (10, 11) instead, sees new preview
+- T=20s: Confirms (10, 11) → cell claimed by B
+- T=30s: Action locked in
+
+Player C:
+- T=2s: Selects (15, 15)
+- T=25s: Still deliberating, hasn't confirmed
+- T=30s: Timer expires, C **passes** (no action)
+
+**Result**:
+- A adds cell at (10, 10)
+- B adds cell at (10, 11)
+- C passes
+- All three actions resolve simultaneously in a single Game of Life tick
+- Score updates: A and B gain points for population (if applicable)
+- Territories update
+
+**Round 2**:
+- New 30-second timer starts
+- All players see the grid after round 1's tick + score updates
+- Process repeats
 
 ---
 
@@ -334,12 +414,14 @@ Game computes next frame:
 
 1. **Territory computation**: Should we use convex hull, bounding box, or flood-fill?
 2. **Wild cell tracking**: Should wild cells eventually decay/disappear if unclaimed?
-3. **Tie-breaking**: If a dead cell has equal neighbors from two players, who owns it?
+3. **Tie-breaking on births**: If a dead cell has equal neighbors from two players, who owns it? (First to confirm action in that region?)
 4. **Isolation rule**: Should isolated populations face penalties or auto-elimination?
 5. **Rule modification system**: Cost structure, earning mechanics, global vs. local B/S changes?
 6. **Pattern detection efficiency**: How to detect gliders, guns, puffers efficiently each tick?
-7. **Multiplayer balance**: Is 1 action/turn fair for 2 vs. 8 players?
-8. **Real-time vs. turn-based UI**: How should players interact (simultaneous actions or strict turn order)?
+7. **Multiplayer balance**: Is 1 action per round fair for 2 vs. 8 players?
+8. **Timer tuning**: 30 seconds enough? Should it scale with player count or grid size?
+9. **Claim timeout**: If a player claims a cell but doesn't confirm before timer → should claim be released?
+10. **Simultaneous conflicts edge case**: If A and B both confirm on (10,10) at T=29.9s, how to determine who wins? (Server-side timestamp?)
 
 ---
 
