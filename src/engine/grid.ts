@@ -78,4 +78,8 @@ export class Grid {
   get gridSize(): number {
     return this.size;
   }
+
+  serialize(): CellOwnership[][] {
+    return this.cells.map(row => row.map(cell => ({ ...cell })));
+  }
 }

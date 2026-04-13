@@ -10,6 +10,7 @@ export class GameLoop {
   private isLoopRunning: boolean = false;
   private startTime: number = 0;
   private timerInterval: NodeJS.Timeout | null = null;
+  private updateInterval: NodeJS.Timeout | null = null;
   private tickCallbacks: TickCallback[] = [];
 
   constructor(session: GameSession, durationSeconds: number = TIMER_DURATION) {
@@ -23,9 +24,17 @@ export class GameLoop {
     this.isLoopRunning = true;
     this.startTime = Date.now();
 
+    // Main game loop - tick happens every 30 seconds
     this.timerInterval = setInterval(() => {
       this.onTimerComplete();
     }, this.duration);
+
+    // Update loop - send frequent elapsed time updates to clients
+    this.updateInterval = setInterval(() => {
+      for (const callback of this.tickCallbacks) {
+        callback();
+      }
+    }, 100); // Send updates every 100ms for smooth timer display
   }
 
   stop(): void {
@@ -36,19 +45,20 @@ export class GameLoop {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
   }
 
   private onTimerComplete(): void {
     // Execute game state tick
     this.session.getGameState().tick();
 
-    // Call registered callbacks
-    for (const callback of this.tickCallbacks) {
-      callback();
-    }
-
     // Reset timer for next round
     this.startTime = Date.now();
+
+    // Callbacks will be called by the update interval, no need to call them here
   }
 
   onTick(callback: TickCallback): void {

@@ -1,0 +1,36 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.app {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+.lobby {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.lobby h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.game {
+  width: 100%;
+  padding: 20px;
+}

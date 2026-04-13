@@ -1,0 +1,67 @@
+.grid-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a1a;
+  cursor: grab;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-container.panning {
+  cursor: grabbing;
+}
+
+.grid {
+  display: grid;
+  gap: 1px;
+  background: #0a0a0a;
+  padding: 8px;
+  width: fit-content;
+  height: fit-content;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+.grid-cell {
+  border-radius: 0;
+  transition: background-color 100ms ease-out;
+  cursor: pointer;
+}
+
+.grid-cell:hover {
+  opacity: 0.9;
+  filter: brightness(1.2);
+}
+
+.pan-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 102, 255, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.zoom-hint {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(100, 100, 100, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 10;
+  min-width: 45px;
+  text-align: center;
+}

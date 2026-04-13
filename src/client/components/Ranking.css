@@ -1,0 +1,102 @@
+.ranking {
+  background: #2a2a2a;
+  border: 2px solid #444;
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ranking-title {
+  font-size: 12px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 24px 24px 1fr 50px 50px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  font-size: 13px;
+  transition: all 200ms ease-out;
+}
+
+.ranking-row:hover {
+  background: #333;
+}
+
+.ranking-row.current-player {
+  background: #0066ff;
+  border: 2px solid #0088ff;
+  font-weight: 600;
+}
+
+.ranking-row.current-player .rank,
+.ranking-row.current-player .player-name,
+.ranking-row.current-player .score,
+.ranking-row.current-player .population {
+  color: #ffffff;
+}
+
+.rank {
+  font-weight: 600;
+  text-align: center;
+  color: #888;
+}
+
+.color-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid #555;
+}
+
+.player-name {
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  text-align: right;
+  color: #0f0;
+  font-weight: 600;
+}
+
+.population {
+  text-align: right;
+  color: #08f;
+  font-weight: 600;
+}
+
+.ranking-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border-top: 1px solid #444;
+  padding-top: 6px;
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.legend-item {
+  text-align: right;
+}

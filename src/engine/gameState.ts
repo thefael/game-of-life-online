@@ -6,7 +6,7 @@ import { OwnershipManager } from './ownership';
 import { ConquestManager } from './conquest';
 import { ScoringManager } from './scoring';
 import { GameState, Player, PlayerId, PendingAction, PlayerColor } from './types';
-import { GRID_SIZE, MAX_PLAYERS } from '../shared/constants';
+import { GRID_SIZE, MAX_PLAYERS, TIMER_DURATION } from '../shared/constants';
 
 export class GameStateManager {
   private grid: Grid;
@@ -93,6 +93,17 @@ export class GameStateManager {
     }
   }
 
+  // Initialize cells directly (bypasses action queue, used for starting configuration)
+  initializeCell(playerId: PlayerId, x: number, y: number): void {
+    const cell = this.grid.getCell(x, y);
+    if (cell.type === 'empty') {
+      this.grid.setCell(x, y, {
+        type: 'owned',
+        playerId,
+      });
+    }
+  }
+
   tick(): void {
     // 1. Apply player actions to grid
     for (const action of this.actions.values()) {
@@ -149,10 +160,10 @@ export class GameStateManager {
 
   getGameState(): GameState {
     return {
-      grid: this.grid.clone() as any,
+      grid: this.grid.serialize(),
       players: this.players,
       generation: this.generation,
-      timer: { duration: 30, elapsed: 0 },
+      timer: { duration: TIMER_DURATION * 1000, elapsed: 0 },
       actions: this.actions,
     };
   }
